@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}إرسال رسالة جماعية{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for("static", filename="css/admin_forms.css") }}"> <!-- Reuse form styles -->
+<style>
+    /* Reusing sidebar styles from dashboard.html for consistency */
+    body {
+        display: flex;
+    }
+    .sidebar {
+        width: 250px;
+        background-color: #2a2a2a;
+        padding: 20px;
+        height: 100vh; /* Full height */
+        position: fixed; /* Fixed Sidebar */
+        right: 0; /* Position on the right for RTL */
+        top: 0;
+        overflow-y: auto; /* Scrollable if content exceeds height */
+    }
+    .sidebar h2 {
+        color: #ffffff;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .sidebar ul li a {
+        display: block;
+        padding: 12px 15px;
+        color: #aaaaaa;
+        text-decoration: none;
+        border-radius: 4px;
+        margin-bottom: 5px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .sidebar ul li a:hover,
+    .sidebar ul li a.active {
+        background-color: #bb86fc;
+        color: #121212;
+    }
+    .sidebar ul li a i {
+        margin-left: 10px; /* Space between icon and text */
+    }
+    .main-content {
+        margin-right: 250px; /* Adjust margin to match sidebar width for RTL */
+        padding: 30px;
+        width: calc(100% - 250px); /* Take remaining width */
+        background-color: #121212; /* Match body background */
+        min-height: 100vh;
+    }
+    .logout-link {
+        margin-top: 30px;
+        text-align: center;
+    }
+    .logout-link a {
+        color: #dc3545; /* Red for logout */
+    }
+    .logout-link a:hover {
+        color: #ff6b6b;
+    }
+
+    /* Form Styles (from settings.html) */
+    .form-container {
+        background-color: #2a2a2a;
+        padding: 30px;
+        border-radius: 8px;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #aaaaaa;
+        font-weight: bold;
+    }
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 12px;
+        background-color: #1e1e1e;
+        border: 1px solid #333;
+        border-radius: 4px;
+        color: #e0e0e0;
+        box-sizing: border-box; /* Include padding in width */
+    }
+    .form-group textarea {
+        min-height: 150px;
+        resize: vertical;
+    }
+     .form-group small {
+        display: block;
+        color: #888;
+        margin-top: 5px;
+    }
+    .submit-button {
+        padding: 12px 25px;
+        background-color: #bb86fc; /* Purple accent */
+        border: none;
+        border-radius: 4px;
+        color: #121212;
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .submit-button:hover {
+        background-color: #a06cd5;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            right: auto;
+        }
+        .main-content {
+            margin-right: 0;
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<aside class="sidebar">
+    <h2><i class="fas fa-tachometer-alt"></i> لوحة التحكم</h2>
+    <ul>
+        <li><a href="{{ url_for("admin.dashboard") }}"><i class="fas fa-home"></i> الرئيسية</a></li>
+        <li><a href="{{ url_for("admin.users_list") }}"><i class="fas fa-users"></i> المستخدمون</a></li>
+        <li><a href="{{ url_for("admin.broadcast") }}" class="active"><i class="fas fa-envelope"></i> الرسائل</a></li>
+        <li><a href="#"><i class="fas fa-bullhorn"></i> الإعلانات</a></li>
+        <li><a href="#"><i class="fas fa-ban"></i> المحتوى المحظور</a></li>
+        <li><a href="{{ url_for("admin.settings") }}"><i class="fas fa-cog"></i> الإعدادات</a></li>
+        <li><a href="#"><i class="fas fa-history"></i> السجلات</a></li>
+        <li><a href="#"><i class="fas fa-music"></i> الموسيقى</a></li>
+    </ul>
+    <div class="logout-link">
+        <a href="{{ url_for("auth.logout") }}"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</a>
+    </div>
+</aside>
+
+<main class="main-content">
+    <h1><i class="fas fa-envelope"></i> إرسال رسالة جماعية</h1>
+
+    <div class="form-container">
+        <form method="POST" action="{{ url_for("admin.broadcast") }}">
+            {# Add CSRF token if using Flask-WTF #}
+            {{ csrf_token }}
+
+            <div class="form-group">
+                <label for="target_group">إرسال إلى</label>
+                <select id="target_group" name="target_group">
+                    <option value="all">جميع المستخدمين</option>
+                    <!-- Add more options later: active users, specific group, etc. -->
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="message_text">نص الرسالة</label>
+                <textarea id="message_text" name="message_text" rows="6" required></textarea>
+                <small>يمكن استخدام تنسيق Markdown الأساسي.</small>
+            </div>
+
+            <button type="submit" class="submit-button">إرسال الرسالة</button>
+        </form>
+    </div>
+
+    <!-- Optional: Display recent broadcast history -->
+
+</main>
+{% endblock %}
+

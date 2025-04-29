@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة المستخدمين{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for("static", filename="css/admin_tables.css") }}"> <!-- Add specific CSS for tables -->
+<style>
+    /* Reusing sidebar styles from dashboard.html for consistency */
+    body {
+        display: flex;
+    }
+    .sidebar {
+        width: 250px;
+        background-color: #2a2a2a;
+        padding: 20px;
+        height: 100vh; /* Full height */
+        position: fixed; /* Fixed Sidebar */
+        right: 0; /* Position on the right for RTL */
+        top: 0;
+        overflow-y: auto; /* Scrollable if content exceeds height */
+    }
+    .sidebar h2 {
+        color: #ffffff;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .sidebar ul li a {
+        display: block;
+        padding: 12px 15px;
+        color: #aaaaaa;
+        text-decoration: none;
+        border-radius: 4px;
+        margin-bottom: 5px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .sidebar ul li a:hover,
+    .sidebar ul li a.active {
+        background-color: #bb86fc;
+        color: #121212;
+    }
+    .sidebar ul li a i {
+        margin-left: 10px; /* Space between icon and text */
+    }
+    .main-content {
+        margin-right: 250px; /* Adjust margin to match sidebar width for RTL */
+        padding: 30px;
+        width: calc(100% - 250px); /* Take remaining width */
+        background-color: #121212; /* Match body background */
+        min-height: 100vh;
+    }
+    .logout-link {
+        margin-top: 30px;
+        text-align: center;
+    }
+    .logout-link a {
+        color: #dc3545; /* Red for logout */
+    }
+    .logout-link a:hover {
+        color: #ff6b6b;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            right: auto;
+        }
+        .main-content {
+            margin-right: 0;
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<aside class="sidebar">
+    <h2><i class="fas fa-tachometer-alt"></i> لوحة التحكم</h2>
+    <ul>
+        <li><a href="{{ url_for("admin.dashboard") }}"><i class="fas fa-home"></i> الرئيسية</a></li>
+        <li><a href="{{ url_for("admin.users_list") }}" class="active"><i class="fas fa-users"></i> المستخدمون</a></li>
+        <li><a href="#"><i class="fas fa-envelope"></i> الرسائل</a></li>
+        <li><a href="#"><i class="fas fa-bullhorn"></i> الإعلانات</a></li>
+        <li><a href="#"><i class="fas fa-ban"></i> المحتوى المحظور</a></li>
+        <li><a href="#"><i class="fas fa-cog"></i> الإعدادات</a></li>
+        <li><a href="#"><i class="fas fa-history"></i> السجلات</a></li>
+        <li><a href="#"><i class="fas fa-music"></i> الموسيقى</a></li>
+    </ul>
+    <div class="logout-link">
+        <a href="{{ url_for("auth.logout") }}"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</a>
+    </div>
+</aside>
+
+<main class="main-content">
+    <h1><i class="fas fa-users"></i> إدارة المستخدمين</h1>
+
+    <!-- Add Search/Filter options here later -->
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>معرف تيليجرام</th>
+                    <th>اسم المستخدم</th>
+                    <th>الاسم الأول</th>
+                    <th>تاريخ الانضمام</th>
+                    <th>آخر نشاط</th>
+                    <th>الحالة</th>
+                    <th>عدد التحميلات</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users.items %}
+                <tr>
+                    <td>{{ user.telegram_user_id }}</td>
+                    <td>{{ user.username or "-" }}</td>
+                    <td>{{ user.first_name or "-" }}</td>
+                    <td>{{ user.joined_at.strftime("%Y-%m-%d %H:%M") if user.joined_at else "-" }}</td>
+                    <td>{{ user.last_active_at.strftime("%Y-%m-%d %H:%M") if user.last_active_at else "-" }}</td>
+                    <td>
+                        {% if user.is_banned %}
+                            <span class="status-banned">محظور</span>
+                        {% else %}
+                            <span class="status-active">نشط</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.downloads.count() }}</td> {# Efficient way to count related items #}
+                    <td>
+                        <a href="#" class="action-btn view-btn" title="عرض التفاصيل"><i class="fas fa-eye"></i></a>
+                        {% if user.is_banned %}
+                            <a href="{{ url_for("admin.unban_user", user_id=user.id) }}" class="action-btn unban-btn" title="إلغاء الحظر"><i class="fas fa-check-circle"></i></a>
+                        {% else %}
+                            <a href="{{ url_for("admin.ban_user", user_id=user.id) }}" class="action-btn ban-btn" title="حظر"><i class="fas fa-user-slash"></i></a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" style="text-align: center;">لا يوجد مستخدمون لعرضهم.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+        {% if users.has_prev %}
+            <a href="{{ url_for("admin.users_list", page=users.prev_num) }}">&laquo; السابق</a>
+        {% endif %}
+        <span>صفحة {{ users.page }} من {{ users.pages }}</span>
+        {% if users.has_next %}
+            <a href="{{ url_for("admin.users_list", page=users.next_num) }}">التالي &raquo;</a>
+        {% endif %}
+    </div>
+
+</main>
+{% endblock %}
+

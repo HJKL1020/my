@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم بوت انستقرام</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Link to your CSS file -->
+    <link rel="stylesheet" href="{{ url_for("static", filename="css/style.css") }}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="icons">
+                <i class="fab fa-telegram"></i>
+                <i class="fab fa-xing"></i> <!-- Using Xing as a placeholder for X -->
+                <i class="fab fa-instagram"></i>
+            </div>
+            <div class="login-icon">
+                <!-- Placeholder for login icon/link -->
+                <a href="{{ url_for("auth.login") }}" title="تسجيل دخول المشرف">
+                    <i class="fas fa-user-shield"></i>
+                </a>
+            </div>
+        </header>
+
+        <section class="server-status">
+            <span>الخادم يعمل</span>
+            <div id="server-status-indicator" class="status-indicator"></div>
+        </section>
+
+        <section class="uptime-counter">
+            <div class="time-unit">
+                <span id="uptime-days">00</span>
+                <span>أيام</span>
+            </div>
+            <div class="time-unit">
+                <span id="uptime-hours">00</span>
+                <span>ساعات</span>
+            </div>
+            <div class="time-unit">
+                <span id="uptime-minutes">00</span>
+                <span>دقائق</span>
+            </div>
+            <div class="time-unit">
+                <span id="uptime-seconds">00</span>
+                <span>ثواني</span>
+            </div>
+        </section>
+
+        <section class="stats">
+            <div class="stat-item">
+                <h3>زائر للموقع</h3>
+                <p id="visitors-count">0</p>
+            </div>
+            <div class="stat-item">
+                <h3>مستخدم البوت</h3>
+                <p id="bot-users-count">0</p>
+            </div>
+            <div class="stat-item">
+                <h3>تحميل من البوت</h3>
+                <p id="bot-downloads-count">0</p>
+            </div>
+        </section>
+
+        <section class="warning-box">
+            <p id="warning-message">يمنع استخدام البوت لتحميل محتوى غير اخلاقي ويتم حظر اي شخص</p>
+        </section>
+
+        <section class="actions">
+            <a href="https://t.me/Instagram966_bot" target="_blank" class="action-button">استخدم البوت الآن</a>
+            <a href="https://t.me/HJKL966" target="_blank" class="action-button">انتقل إلى قناتنا</a>
+            <a href="https://www.tiktok.com/@RSSF10" target="_blank" class="action-button">تابعنا على تيك توك</a>
+        </section>
+
+        <section class="instructions">
+            <h2>التعليمات</h2>
+            <ol>
+                <li>انتقل إلى البوت <a href="https://t.me/Instagram966_bot" target="_blank">@Instagram966_bot</a> اضغط على /start</li>
+                <li>يطلب منك الاشتراك في قناتنا <a href="https://t.me/HJKL966" target="_blank">@HJKL966</a> (اجباري)</li>
+                <li>اضغط على تحقق</li>
+                <li>يمكنك استخدام البوت الآن</li>
+            </ol>
+        </section>
+
+        <footer>
+            <p>حقوق HJKL966</p>
+        </footer>
+
+    </div> <!-- /container -->
+
+    <!-- Link to your JavaScript file -->
+    <script src="{{ url_for("static", filename="js/script.js") }}"></script>
+</body>
+</html>
+

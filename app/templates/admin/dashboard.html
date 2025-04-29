@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة التحكم{% endblock %}
+
+{% block head_extra %}
+<style>
+    /* Basic Admin Layout Styles */
+    body {
+        display: flex;
+    }
+    .sidebar {
+        width: 250px;
+        background-color: #2a2a2a;
+        padding: 20px;
+        height: 100vh; /* Full height */
+        position: fixed; /* Fixed Sidebar */
+        right: 0; /* Position on the right for RTL */
+        top: 0;
+        overflow-y: auto; /* Scrollable if content exceeds height */
+    }
+    .sidebar h2 {
+        color: #ffffff;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .sidebar ul li a {
+        display: block;
+        padding: 12px 15px;
+        color: #aaaaaa;
+        text-decoration: none;
+        border-radius: 4px;
+        margin-bottom: 5px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .sidebar ul li a:hover,
+    .sidebar ul li a.active {
+        background-color: #bb86fc;
+        color: #121212;
+    }
+    .sidebar ul li a i {
+        margin-left: 10px; /* Space between icon and text */
+    }
+    .main-content {
+        margin-right: 250px; /* Adjust margin to match sidebar width for RTL */
+        padding: 30px;
+        width: calc(100% - 250px); /* Take remaining width */
+        background-color: #121212; /* Match body background */
+        min-height: 100vh;
+    }
+    .logout-link {
+        margin-top: 30px;
+        text-align: center;
+    }
+    .logout-link a {
+        color: #dc3545; /* Red for logout */
+    }
+    .logout-link a:hover {
+        color: #ff6b6b;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            right: auto;
+        }
+        .main-content {
+            margin-right: 0;
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<aside class="sidebar">
+    <h2><i class="fas fa-tachometer-alt"></i> لوحة التحكم</h2>
+    <ul>
+        <li><a href="{{ url_for("admin.dashboard") }}" class="active"><i class="fas fa-home"></i> الرئيسية</a></li>
+        <li><a href="#"><i class="fas fa-users"></i> المستخدمون</a></li>
+        <li><a href="#"><i class="fas fa-envelope"></i> الرسائل</a></li>
+        <li><a href="#"><i class="fas fa-bullhorn"></i> الإعلانات</a></li>
+        <li><a href="#"><i class="fas fa-ban"></i> المحتوى المحظور</a></li>
+        <li><a href="#"><i class="fas fa-cog"></i> الإعدادات</a></li>
+        <li><a href="#"><i class="fas fa-history"></i> السجلات</a></li>
+        <li><a href="#"><i class="fas fa-music"></i> الموسيقى</a></li>
+        <!-- Add other links as needed -->
+    </ul>
+    <div class="logout-link">
+        <a href="{{ url_for("auth.logout") }}"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</a>
+    </div>
+</aside>
+
+<main class="main-content">
+    <h1>أهلاً بك في لوحة التحكم</h1>
+    <p>هنا ستجد الإحصائيات والأدوات لإدارة البوت.</p>
+    <!-- Dashboard content goes here -->
+    <!-- Example: Stats cards, charts, recent activity -->
+</main>
+{% endblock %}
+

@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة الإعدادات{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for("static", filename="css/admin_forms.css") }}"> <!-- Add specific CSS for forms -->
+<style>
+    /* Reusing sidebar styles from dashboard.html for consistency */
+    body {
+        display: flex;
+    }
+    .sidebar {
+        width: 250px;
+        background-color: #2a2a2a;
+        padding: 20px;
+        height: 100vh; /* Full height */
+        position: fixed; /* Fixed Sidebar */
+        right: 0; /* Position on the right for RTL */
+        top: 0;
+        overflow-y: auto; /* Scrollable if content exceeds height */
+    }
+    .sidebar h2 {
+        color: #ffffff;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .sidebar ul li a {
+        display: block;
+        padding: 12px 15px;
+        color: #aaaaaa;
+        text-decoration: none;
+        border-radius: 4px;
+        margin-bottom: 5px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .sidebar ul li a:hover,
+    .sidebar ul li a.active {
+        background-color: #bb86fc;
+        color: #121212;
+    }
+    .sidebar ul li a i {
+        margin-left: 10px; /* Space between icon and text */
+    }
+    .main-content {
+        margin-right: 250px; /* Adjust margin to match sidebar width for RTL */
+        padding: 30px;
+        width: calc(100% - 250px); /* Take remaining width */
+        background-color: #121212; /* Match body background */
+        min-height: 100vh;
+    }
+    .logout-link {
+        margin-top: 30px;
+        text-align: center;
+    }
+    .logout-link a {
+        color: #dc3545; /* Red for logout */
+    }
+    .logout-link a:hover {
+        color: #ff6b6b;
+    }
+
+    /* Form Styles */
+    .form-container {
+        background-color: #2a2a2a;
+        padding: 30px;
+        border-radius: 8px;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #aaaaaa;
+        font-weight: bold;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="url"],
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 12px;
+        background-color: #1e1e1e;
+        border: 1px solid #333;
+        border-radius: 4px;
+        color: #e0e0e0;
+        box-sizing: border-box; /* Include padding in width */
+    }
+    .form-group textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+    .form-group small {
+        display: block;
+        color: #888;
+        margin-top: 5px;
+    }
+    .submit-button {
+        padding: 12px 25px;
+        background-color: #bb86fc; /* Purple accent */
+        border: none;
+        border-radius: 4px;
+        color: #121212;
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .submit-button:hover {
+        background-color: #a06cd5;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            right: auto;
+        }
+        .main-content {
+            margin-right: 0;
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<aside class="sidebar">
+    <h2><i class="fas fa-tachometer-alt"></i> لوحة التحكم</h2>
+    <ul>
+        <li><a href="{{ url_for("admin.dashboard") }}"><i class="fas fa-home"></i> الرئيسية</a></li>
+        <li><a href="{{ url_for("admin.users_list") }}"><i class="fas fa-users"></i> المستخدمون</a></li>
+        <li><a href="#"><i class="fas fa-envelope"></i> الرسائل</a></li>
+        <li><a href="#"><i class="fas fa-bullhorn"></i> الإعلانات</a></li>
+        <li><a href="#"><i class="fas fa-ban"></i> المحتوى المحظور</a></li>
+        <li><a href="{{ url_for("admin.settings") }}" class="active"><i class="fas fa-cog"></i> الإعدادات</a></li>
+        <li><a href="#"><i class="fas fa-history"></i> السجلات</a></li>
+        <li><a href="#"><i class="fas fa-music"></i> الموسيقى</a></li>
+    </ul>
+    <div class="logout-link">
+        <a href="{{ url_for("auth.logout") }}"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</a>
+    </div>
+</aside>
+
+<main class="main-content">
+    <h1><i class="fas fa-cog"></i> إدارة الإعدادات</h1>
+
+    <div class="form-container">
+        <form method="POST" action="{{ url_for("admin.settings") }}">
+            {# Add CSRF token if using Flask-WTF #}
+            {{ csrf_token }} 
+
+            <h3>الإعدادات العامة</h3>
+            <div class="form-group">
+                <label for="telegram_channel_url">رابط قناة التيليجرام</label>
+                <input type="url" id="telegram_channel_url" name="telegram_channel_url" value="{{ settings.get("telegram_channel_url", "") }}" placeholder="https://t.me/yourchannel">
+                <small>الرابط الذي يظهر في الواجهة الرئيسية وزر "انتقل إلى قناتنا".</small>
+            </div>
+
+            <div class="form-group">
+                <label for="tiktok_profile_url">رابط حساب تيك توك</label>
+                <input type="url" id="tiktok_profile_url" name="tiktok_profile_url" value="{{ settings.get("tiktok_profile_url", "") }}" placeholder="https://www.tiktok.com/@yourprofile">
+                <small>الرابط الذي يظهر في الواجهة الرئيسية لزر "تابعنا على تيك توك".</small>
+            </div>
+
+            <div class="form-group">
+                <label for="bot_username">اسم مستخدم البوت</label>
+                <input type="text" id="bot_username" name="bot_username" value="{{ settings.get("bot_username", "") }}" placeholder="@YourBotUsername">
+                <small>اسم مستخدم البوت الذي يظهر في التعليمات.</small>
+            </div>
+
+            <h3>رسالة التحذير (الواجهة الرئيسية)</h3>
+            <div class="form-group">
+                <label for="warning_message_text">نص رسالة التحذير</label>
+                <textarea id="warning_message_text" name="warning_message_text" rows="3">{{ settings.get("warning_message_text", "يمنع استخدام البوت لتحميل محتوى غير اخلاقي ويتم حظر اي شخص") }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="warning_message_color">لون رسالة التحذير</label>
+                <select id="warning_message_color" name="warning_message_color">
+                    <option value="red" {% if settings.get("warning_message_color") == "red" %}selected{% endif %}>أحمر</option>
+                    <option value="orange" {% if settings.get("warning_message_color") == "orange" %}selected{% endif %}>برتقالي</option>
+                    <option value="yellow" {% if settings.get("warning_message_color") == "yellow" %}selected{% endif %}>أصفر</option>
+                    <!-- Add more colors if needed -->
+                </select>
+            </div>
+
+            <!-- Add more settings sections as needed (e.g., Bot messages, Security) -->
+
+            <button type="submit" class="submit-button">حفظ الإعدادات</button>
+        </form>
+    </div>
+
+</main>
+{% endblock %}
+

@@ -1,0 +1,56 @@
+# Environment variables
+.env
+*.env.*
+!.env.example
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Database files
+*.db
+*.db-journal*
+*.sqlite
+*.sqlite3
+
+# IDE / Editor specific
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sublime-*
+
+# Virtual environment
+venv/
+*/venv/
+.venv/
+*/.venv/
+env/
+*/env/
+ENV/
+*/ENV/
+
+# Migration files (Keep versions, ignore others if needed)
+# migrations/versions/* # Keep versions
+# migrations/script.py.mako # Usually kept
+# migrations/env.py # Usually kept
+# migrations/README # Usually kept
+# alembic.ini # Usually kept
+
+# Instaloader session files & logs
+*.session
+instaloader.log
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+

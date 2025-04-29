@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}تسجيل دخول المشرف{% endblock %}
+
+{% block head_extra %}
+<style>
+    /* Add specific styles for login page if needed */
+    .login-container {
+        max-width: 400px;
+        margin: 50px auto;
+        padding: 30px;
+        background-color: #2a2a2a; /* Darker background for form */
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+    .login-container h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: #ffffff;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #aaaaaa;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="password"] {
+        width: 100%;
+        padding: 12px;
+        background-color: #1e1e1e;
+        border: 1px solid #333;
+        border-radius: 4px;
+        color: #e0e0e0;
+        box-sizing: border-box; /* Include padding in width */
+    }
+    .login-button {
+        width: 100%;
+        padding: 12px;
+        background-color: #007bff; /* Blue button as requested */
+        border: none;
+        border-radius: 4px;
+        color: #ffffff;
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .login-button:hover {
+        background-color: #0056b3;
+    }
+    .alert {
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 4px;
+        text-align: center;
+    }
+    .alert-danger {
+        background-color: rgba(220, 53, 69, 0.3);
+        color: #dc3545;
+        border: 1px solid #dc3545;
+    }
+    .alert-success {
+        background-color: rgba(40, 167, 69, 0.3);
+        color: #28a745;
+        border: 1px solid #28a745;
+    }
+     .alert-info {
+        background-color: rgba(23, 162, 184, 0.3);
+        color: #17a2b8;
+        border: 1px solid #17a2b8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h2>تسجيل دخول المشرف</h2>
+    <form method="POST" action="{{ url_for("auth.login") }}">
+        {{ csrf_token }} {# Add this if using Flask-WTF #}
+        <div class="form-group">
+            <label for="username">اسم المستخدم</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="password">كلمة المرور</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit" class="login-button">تسجيل الدخول</button>
+    </form>
+</div>
+{% endblock %}
+
