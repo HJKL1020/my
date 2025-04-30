@@ -2,7 +2,12 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required
 from app import db
-from app.models import User
+# Remove Message from this import
+from app.models import User, Setting # Add Setting import
+from datetime import datetime, timezone # Import datetime
+import telegram
+import threading
+import os
 
 bp = Blueprint("admin", __name__)
 
@@ -25,8 +30,7 @@ def users_list():
 def ban_user(user_id):
     user = db.session.get(User, user_id)
     if user:
-        user.is_banned = True
-        # Add ban reason later if needed
+        user.is_banned = True # Add ban reason later if needed
         try:
             db.session.commit()
             flash(f"تم حظر المستخدم {user.username or user.telegram_user_id} بنجاح.", "success")
@@ -43,7 +47,7 @@ def unban_user(user_id):
     user = db.session.get(User, user_id)
     if user:
         user.is_banned = False
-        user.ban_reason = None # Clear ban reason
+        # user.ban_reason = None # Clear ban reason if you add one
         try:
             db.session.commit()
             flash(f"تم إلغاء حظر المستخدم {user.username or user.telegram_user_id} بنجاح.", "success")
@@ -54,14 +58,6 @@ def unban_user(user_id):
         flash("المستخدم غير موجود.", "warning")
     return redirect(url_for("admin.users_list", page=request.args.get("page", 1)))
 
-# Add other admin routes here later (messages, settings, etc.)
-
-
-
-from app.models import User, Setting # Add Setting import
-from datetime import datetime, timezone # Import datetime
-
-# ... (previous code) ...
 
 @bp.route("/settings", methods=["GET", "POST"])
 @login_required
@@ -78,10 +74,10 @@ def settings():
             for key in settings_to_update:
                 value = request.form.get(key)
                 if value is not None:
-                    setting = db.session.get(Setting, key)
+                    setting = db.session.query(Setting).filter_by(key=key).first() # Use filter_by for non-primary key
                     if setting:
                         setting.value = value
-                        setting.last_updated_at = datetime.now(timezone.utc)
+                        setting.last_updated = datetime.now(timezone.utc)
                         # Assuming current_user is the logged-in admin
                         # setting.last_updated_by_admin_id = current_user.id
                     else:
@@ -90,8 +86,7 @@ def settings():
                             key=key,
                             value=value,
                             # last_updated_by_admin_id=current_user.id,
-                            last_updated_at=datetime.now(timezone.utc)
-                            # Add description if needed
+                            last_updated=datetime.now(timezone.utc) # Add description if needed
                         )
                         db.session.add(new_setting)
             db.session.commit()
@@ -112,7 +107,7 @@ def settings():
         ]
         settings_data = {}
         for key in settings_keys:
-            setting = db.session.get(Setting, key)
+            setting = db.session.query(Setting).filter_by(key=key).first()
             if setting:
                 settings_data[key] = setting.value
             else:
@@ -123,22 +118,11 @@ def settings():
                     settings_data[key] = "red"
                 else:
                     settings_data[key] = ""
-
     except Exception as e:
         flash(f"حدث خطأ أثناء تحميل الإعدادات: {e}", "danger")
         settings_data = {}
-
     return render_template("admin/settings.html", settings=settings_data)
 
-# ... (rest of the code) ...
-
-
-
-import telegram
-import threading
-import os
-from app.models import User, Setting, Message # Add Message import
-from datetime import datetime, timezone # Import datetime
 
 # Function to send message in a background thread
 def send_telegram_message_async(bot_token, chat_id, text):
@@ -146,12 +130,11 @@ def send_telegram_message_async(bot_token, chat_id, text):
         bot = telegram.Bot(token=bot_token)
         # Using await inside async function if library supports it, or run_sync for sync context
         # For simplicity here, assuming sync call works or using a simple thread
-        bot.send_message(chat_id=chat_id, text=text, parse_mode='Markdown')
+        bot.send_message(chat_id=chat_id, text=text, parse_mode=\'Markdown\')
         current_app.logger.info(f"Message sent to {chat_id}")
     except Exception as e:
         current_app.logger.error(f"Failed to send message to {chat_id}: {e}")
 
-# ... (previous code) ...
 
 @bp.route("/broadcast", methods=["GET", "POST"])
 @login_required
@@ -181,6 +164,7 @@ def broadcast():
 
             # Record the broadcast message in the database (optional)
             # Assuming sender_id=0 or a specific admin ID for broadcasts
+            # Remove or comment out the lines using the non-existent Message model
             # broadcast_msg = Message(message_text=message_text, is_broadcast=True, sender_id=current_user.id)
             # db.session.add(broadcast_msg)
             # db.session.commit()
@@ -198,12 +182,12 @@ def broadcast():
 
             # Optionally wait for threads to complete, but might still timeout request
             # for thread in threads:
-            #     thread.join(timeout=5) # Wait max 5 seconds per thread
+            #    thread.join(timeout=5) # Wait max 5 seconds per thread
 
             flash(f"بدأ إرسال الرسالة الجماعية إلى {sent_count} مستخدم في الخلفية.", "success")
 
         except Exception as e:
-            # db.session.rollback()
+            # db.session.rollback() # Rollback if message recording was attempted
             flash(f"حدث خطأ أثناء بدء إرسال الرسالة الجماعية: {e}", "danger")
 
         return redirect(url_for("admin.broadcast"))
