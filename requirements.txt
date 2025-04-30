@@ -11,3 +11,4 @@ gunicorn
 
 instaloader
 
+instaloader
