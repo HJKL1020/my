@@ -1,195 +1,98 @@
-# Placeholder for admin dashboard routes
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
-from flask_login import login_required
+# Placeholder for main routes
+from flask import Blueprint, render_template, jsonify, current_app
 from app import db
-# Remove Message from this import
-from app.models import User, Setting # Add Setting import
-from datetime import datetime, timezone # Import datetime
-import telegram
-import threading
-import os
+from app.models import User, Download, Setting
+import datetime
+import time
 
-bp = Blueprint("admin", __name__)
+bp = Blueprint("main", __name__)
 
-@bp.route("/dashboard")
-@login_required # Protect this route
-def dashboard():
-    # This will render the admin dashboard template
-    return render_template("admin/dashboard.html")
+# Store app start time globally (simple approach)
+# A more robust approach might involve storing/retrieving from DB or a file
+app_start_time = time.time()
 
-@bp.route("/users")
-@login_required
-def users_list():
-    page = request.args.get("page", 1, type=int)
-    per_page = current_app.config.get("ADMIN_USERS_PER_PAGE", 15) # Configurable items per page
-    users = db.session.query(User).order_by(User.joined_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
-    return render_template("admin/users.html", users=users)
-
-@bp.route("/users/<int:user_id>/ban", methods=["GET"]) # Use GET for simplicity, POST is better practice
-@login_required
-def ban_user(user_id):
-    user = db.session.get(User, user_id)
-    if user:
-        user.is_banned = True # Add ban reason later if needed
-        try:
-            db.session.commit()
-            flash(f"تم حظر المستخدم {user.username or user.telegram_user_id} بنجاح.", "success")
-        except Exception as e:
-            db.session.rollback()
-            flash(f"حدث خطأ أثناء حظر المستخدم: {e}", "danger")
-    else:
-        flash("المستخدم غير موجود.", "warning")
-    return redirect(url_for("admin.users_list", page=request.args.get("page", 1)))
-
-@bp.route("/users/<int:user_id>/unban", methods=["GET"]) # Use GET for simplicity, POST is better practice
-@login_required
-def unban_user(user_id):
-    user = db.session.get(User, user_id)
-    if user:
-        user.is_banned = False
-        # user.ban_reason = None # Clear ban reason if you add one
-        try:
-            db.session.commit()
-            flash(f"تم إلغاء حظر المستخدم {user.username or user.telegram_user_id} بنجاح.", "success")
-        except Exception as e:
-            db.session.rollback()
-            flash(f"حدث خطأ أثناء إلغاء حظر المستخدم: {e}", "danger")
-    else:
-        flash("المستخدم غير موجود.", "warning")
-    return redirect(url_for("admin.users_list", page=request.args.get("page", 1)))
-
-@bp.route("/settings", methods=["GET", "POST"])
-@login_required
-def settings():
-    if request.method == "POST":
-        try:
-            settings_to_update = [
-                "telegram_channel_url",
-                "tiktok_profile_url",
-                "bot_username",
-                "warning_message_text",
-                "warning_message_color"
-            ]
-            for key in settings_to_update:
-                value = request.form.get(key)
-                if value is not None:
-                    setting = db.session.query(Setting).filter_by(key=key).first() # Use filter_by for non-primary key
-                    if setting:
-                        setting.value = value
-                        setting.last_updated = datetime.now(timezone.utc)
-                        # Assuming current_user is the logged-in admin
-                        # setting.last_updated_by_admin_id = current_user.id
-                    else:
-                        # Create new setting if it doesn't exist
-                        new_setting = Setting(
-                            key=key,
-                            value=value,
-                            # last_updated_by_admin_id=current_user.id,
-                            last_updated=datetime.now(timezone.utc) # Add description if needed
-                        )
-                        db.session.add(new_setting)
-            db.session.commit()
-            flash("تم تحديث الإعدادات بنجاح!", "success")
-        except Exception as e:
-            db.session.rollback()
-            flash(f"حدث خطأ أثناء تحديث الإعدادات: {e}", "danger")
-        return redirect(url_for("admin.settings"))
-
-    # For GET request
+# Function to get stats from database
+def get_stats_from_db():
+    stats = {
+        "visitors": 0,  # Visitor count needs a better mechanism (e.g., Redis, dedicated table, or analytics service)
+                      # Using a placeholder or simple DB setting for now.
+        "bot_users": 0,
+        "bot_downloads": 0
+    }
     try:
-        settings_keys = [
-            "telegram_channel_url",
-            "tiktok_profile_url",
-            "bot_username",
-            "warning_message_text",
-            "warning_message_color"
-        ]
-        settings_data = {}
-        for key in settings_keys:
-            setting = db.session.query(Setting).filter_by(key=key).first()
-            if setting:
-                settings_data[key] = setting.value
-            else:
-                # Provide default values if setting not found in DB
-                if key == "warning_message_text":
-                    settings_data[key] = "يمنع استخدام البوت لتحميل محتوى غير اخلاقي ويتم حظر اي شخص"
-                elif key == "warning_message_color":
-                    settings_data[key] = "red"
-                else:
-                    settings_data[key] = ""
-    except Exception as e:
-        flash(f"حدث خطأ أثناء تحميل الإعدادات: {e}", "danger")
-        settings_data = {}
-
-    return render_template("admin/settings.html", settings=settings_data)
-
-# Function to send message in a background thread
-def send_telegram_message_async(bot_token, chat_id, text):
-    try:
-        bot = telegram.Bot(token=bot_token)
-        # Corrected the parse_mode argument below
-        bot.send_message(chat_id=chat_id, text=text, parse_mode='Markdown') # <<< تم تصحيح هذا السطر
-        current_app.logger.info(f"Message sent to {chat_id}")
-    except Exception as e:
-        current_app.logger.error(f"Failed to send message to {chat_id}: {e}")
-
-@bp.route("/broadcast", methods=["GET", "POST"])
-@login_required
-def broadcast():
-    if request.method == "POST":
-        target_group = request.form.get("target_group")
-        message_text = request.form.get("message_text")
-        bot_token = current_app.config.get("TELEGRAM_BOT_TOKEN")
-
-        if not message_text:
-            flash("نص الرسالة لا يمكن أن يكون فارغاً.", "warning")
-            return redirect(url_for("admin.broadcast"))
-
-        if not bot_token:
-            flash("لم يتم تكوين توكن بوت التليجرام في الإعدادات.", "danger")
-            return redirect(url_for("admin.broadcast"))
-
-        try:
-            users_to_message = []
-            if target_group == "all":
-                users_to_message = db.session.query(User).filter_by(is_banned=False).all()
-            # Add other target groups logic here later
-
-            if not users_to_message:
-                flash("لم يتم العثور على مستخدمين لإرسال الرسالة إليهم.", "warning")
-                return redirect(url_for("admin.broadcast"))
-
-            # Record the broadcast message in the database (optional)
-            # Assuming sender_id=0 or a specific admin ID for broadcasts
-            # Remove or comment out the lines using the non-existent Message model
-            # broadcast_msg = Message(message_text=message_text, is_broadcast=True, sender_id=current_user.id)
-            # db.session.add(broadcast_msg)
+        # Example: Get visitor count from settings (assuming a key 'visitor_count' exists)
+        visitor_setting = db.session.query(Setting).filter_by(key="visitor_count").first() # Use query/filter_by
+        if visitor_setting:
+            current_count = int(visitor_setting.value)
+            # Increment visitor count - NOTE: This is basic and not thread-safe for high traffic
+            # A proper solution is needed for production.
+            current_count += 1
+            visitor_setting.value = str(current_count)
+            stats["visitors"] = current_count
+            # db.session.commit() # Commit frequently might impact performance, consider batching or background task
+        else:
+            # Initialize setting if not found
+            # REMOVED description argument
+            new_visitor_setting = Setting(key="visitor_count", value="1")
+            db.session.add(new_visitor_setting)
+            stats["visitors"] = 1
             # db.session.commit()
 
-            # Send messages in background threads to avoid blocking
-            sent_count = 0
-            failed_count = 0
-            threads = []
-            for user in users_to_message:
-                # Create and start a new thread for each message
-                thread = threading.Thread(target=send_telegram_message_async, args=(bot_token, user.telegram_user_id, message_text))
-                threads.append(thread)
-                thread.start()
-                sent_count += 1 # Assuming thread starts successfully, actual success is logged inside thread
+        # Get bot users count
+        stats["bot_users"] = db.session.query(User).count()
 
-            # Optionally wait for threads to complete, but might still timeout request
-            # for thread in threads:
-            #    thread.join(timeout=5) # Wait max 5 seconds per thread
+        # Get bot downloads count
+        stats["bot_downloads"] = db.session.query(Download).count()
 
-            flash(f"بدأ إرسال الرسالة الجماعية إلى {sent_count} مستخدم في الخلفية.", "success")
+        # Commit any changes made (like visitor count increment)
+        db.session.commit()
 
-        except Exception as e:
-            # db.session.rollback() # Rollback if message recording was attempted
-            flash(f"حدث خطأ أثناء بدء إرسال الرسالة الجماعية: {e}", "danger")
+    except Exception as e:
+        db.session.rollback()  # Rollback in case of error
+        current_app.logger.error(f"Error getting stats from DB: {e}")
+        # Return defaults or indicate error
+        stats["visitors"] = "N/A"
+        stats["bot_users"] = "N/A"
+        stats["bot_downloads"] = "N/A"
 
-        return redirect(url_for("admin.broadcast"))
+    return stats
 
-    # For GET request
-    return render_template("admin/broadcast.html")
+# Function to get warning message from database
+def get_warning_message_from_db():
+    default_warning = {
+        "text": "يمنع استخدام البوت لتحميل محتوى غير اخلاقي ويتم حظر اي شخص",
+        "color": "red"
+    }
+    try:
+        # Use query/filter_by instead of db.session.get for non-primary keys
+        warning_text_setting = db.session.query(Setting).filter_by(key="warning_message_text").first()
+        warning_color_setting = db.session.query(Setting).filter_by(key="warning_message_color").first()
 
-# ... (rest of the code)
+        text = warning_text_setting.value if warning_text_setting else default_warning["text"]
+        color = warning_color_setting.value if warning_color_setting else default_warning["color"]
+        return {"text": text, "color": color}
+    except Exception as e:
+        current_app.logger.error(f"Error getting warning message from DB: {e}")
+        return default_warning
+
+@bp.route("/")
+def index():
+    # Render the main frontend page
+    return render_template("index.html")
+
+@bp.route("/api/stats")
+def api_stats():
+    # Use the new functions that query the database
+    stats = get_stats_from_db()
+    warning = get_warning_message_from_db()
+    # Use the globally stored start time
+    start_timestamp = app_start_time
+    return jsonify({
+        "visitors": stats["visitors"],
+        "bot_users": stats["bot_users"],
+        "bot_downloads": stats["bot_downloads"],
+        "warning_message": warning["text"],
+        "warning_color": warning["color"],
+        "server_start_timestamp": start_timestamp
+    })
+
