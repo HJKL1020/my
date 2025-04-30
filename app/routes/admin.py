@@ -128,9 +128,8 @@ def settings():
 def send_telegram_message_async(bot_token, chat_id, text):
     try:
         bot = telegram.Bot(token=bot_token)
-        # Using await inside async function if library supports it, or run_sync for sync context
-        # For simplicity here, assuming sync call works or using a simple thread
-        bot.send_message(chat_id=chat_id, text=text, parse_mode=\'Markdown\')
+        # Corrected the parse_mode argument below
+        bot.send_message(chat_id=chat_id, text=text, parse_mode='Markdown') # <<< تم تصحيح هذا السطر
         current_app.logger.info(f"Message sent to {chat_id}")
     except Exception as e:
         current_app.logger.error(f"Failed to send message to {chat_id}: {e}")
