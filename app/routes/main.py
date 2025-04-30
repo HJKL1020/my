@@ -14,14 +14,15 @@ app_start_time = time.time()
 # Function to get stats from database
 def get_stats_from_db():
     stats = {
-        "visitors": 0, # Visitor count needs a better mechanism (e.g., Redis, dedicated table, or analytics service)
-                       # Using a placeholder or simple DB setting for now.
+        "visitors": 0,  # Visitor count needs a better mechanism (e.g., Redis, dedicated table, or analytics service)
+                      # Using a placeholder or simple DB setting for now.
         "bot_users": 0,
         "bot_downloads": 0
     }
     try:
         # Example: Get visitor count from settings (assuming a key 'visitor_count' exists)
-        visitor_setting = db.session.get(Setting, "visitor_count")
+        # CORRECTED: Use filter_by for non-primary key lookup
+        visitor_setting = db.session.query(Setting).filter_by(key="visitor_count").first()
         if visitor_setting:
             current_count = int(visitor_setting.value)
             # Increment visitor count - NOTE: This is basic and not thread-safe for high traffic
@@ -32,7 +33,8 @@ def get_stats_from_db():
             # db.session.commit() # Commit frequently might impact performance, consider batching or background task
         else:
             # Initialize setting if not found
-            new_visitor_setting = Setting(key="visitor_count", value="1", description="Contador de visitas al sitio web")
+            # CORRECTED: REMOVED description argument
+            new_visitor_setting = Setting(key="visitor_count", value="1")
             db.session.add(new_visitor_setting)
             stats["visitors"] = 1
             # db.session.commit()
@@ -45,7 +47,6 @@ def get_stats_from_db():
 
         # Commit any changes made (like visitor count increment)
         db.session.commit()
-
     except Exception as e:
         db.session.rollback() # Rollback in case of error
         current_app.logger.error(f"Error getting stats from DB: {e}")
@@ -53,7 +54,6 @@ def get_stats_from_db():
         stats["visitors"] = "N/A"
         stats["bot_users"] = "N/A"
         stats["bot_downloads"] = "N/A"
-
     return stats
 
 # Function to get warning message from database
@@ -63,12 +63,12 @@ def get_warning_message_from_db():
         "color": "red"
     }
     try:
-        warning_text_setting = db.session.get(Setting, "warning_message_text")
-        warning_color_setting = db.session.get(Setting, "warning_message_color")
+        # CORRECTED: Use filter_by for non-primary key lookup
+        warning_text_setting = db.session.query(Setting).filter_by(key="warning_message_text").first()
+        warning_color_setting = db.session.query(Setting).filter_by(key="warning_message_color").first()
 
         text = warning_text_setting.value if warning_text_setting else default_warning["text"]
         color = warning_color_setting.value if warning_color_setting else default_warning["color"]
-
         return {"text": text, "color": color}
     except Exception as e:
         current_app.logger.error(f"Error getting warning message from DB: {e}")
@@ -84,10 +84,8 @@ def api_stats():
     # Use the new functions that query the database
     stats = get_stats_from_db()
     warning = get_warning_message_from_db()
-
     # Use the globally stored start time
     start_timestamp = app_start_time
-
     return jsonify({
         "visitors": stats["visitors"],
         "bot_users": stats["bot_users"],
