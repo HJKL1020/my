@@ -58,7 +58,6 @@ def unban_user(user_id):
         flash("المستخدم غير موجود.", "warning")
     return redirect(url_for("admin.users_list", page=request.args.get("page", 1)))
 
-
 @bp.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
@@ -121,8 +120,8 @@ def settings():
     except Exception as e:
         flash(f"حدث خطأ أثناء تحميل الإعدادات: {e}", "danger")
         settings_data = {}
-    return render_template("admin/settings.html", settings=settings_data)
 
+    return render_template("admin/settings.html", settings=settings_data)
 
 # Function to send message in a background thread
 def send_telegram_message_async(bot_token, chat_id, text):
@@ -133,7 +132,6 @@ def send_telegram_message_async(bot_token, chat_id, text):
         current_app.logger.info(f"Message sent to {chat_id}")
     except Exception as e:
         current_app.logger.error(f"Failed to send message to {chat_id}: {e}")
-
 
 @bp.route("/broadcast", methods=["GET", "POST"])
 @login_required
@@ -194,5 +192,4 @@ def broadcast():
     # For GET request
     return render_template("admin/broadcast.html")
 
-# ... (rest of the code) ...
-
+# ... (rest of the code)
