@@ -1,11 +1,10 @@
 from app import create_app, db
-from app.models import Admin, User # Add other models if needed for startup checks
+from app.models import Admin, User # Keep imports if needed elsewhere or by Flask context
 import os
 
 app = create_app()
 
-# Function to create initial admin user if none exists
-# NOTE: This might run every time a web worker starts. Consider moving to a migration script.
+# Function definition remains, but it's not called automatically
 def create_initial_admin():
     with app.app_context():
         if db.session.query(Admin).count() == 0:
@@ -28,9 +27,8 @@ def create_initial_admin():
         else:
             print("Admin user(s) already exist.")
 
-# Create initial admin user if needed (run once per worker start)
-# This should ideally be handled differently in production (e.g., migrations)
-create_initial_admin()
+# REMOVE THE AUTOMATIC CALL BELOW:
+# create_initial_admin() 
 
 # The 'app' object is created above and is what Gunicorn needs (e.g., gunicorn run:app)
 # No need for app.run() here for production deployment via Gunicorn.
