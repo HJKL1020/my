@@ -251,7 +251,7 @@ async def start_command(client: Client, message: Message):
     add_or_update_user(db_session, user)
 
     if not await is_user_subscribed(client, user.id):
-        keyboard = InlineKeyboardMarkup([
+        keyboard = InlineKeyboardMarkup([Fix syntax errors in bot.py
             [InlineKeyboardButton("اشترك في القناة", url=f"https://t.me/{REQUIRED_CHANNEL_USERNAME}") ],
             [InlineKeyboardButton("تحققت", callback_data="check_subscription")]
         ])
