@@ -496,8 +496,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         if not url_match:
             logger.info(f"Message from {telegram_user.id} is not a valid Instagram link.")
             # Optionally reply if message is not /start and not an insta link
-            # await update.message.reply_text("يرجى إرسال رابط منشور انستقرام صالح (صورة، فيديو، ريلز).")
-            return
+            await update.message.reply_text("يرجى إرسال رابط منشور انستقرام صالح (صورة، فيديو، ريلز).")
+            return # Return after sending the message
 
         insta_url = url_match.group(0) # Get the full matched URL
         shortcode = url_match.group(1) # Get the shortcode

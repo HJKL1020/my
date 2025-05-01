@@ -8,7 +8,4 @@ python-dotenv
 python-telegram-bot
 requests
 gunicorn
-
-instaloader
-
 instaloader
