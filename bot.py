@@ -263,10 +263,8 @@ async def start_command(client: Client, message: Message):
 اضغط على الزر أدناه للاشتراك ثم اضغط على 'تحققت'.""",
             reply_markup=keyboard,
             quote=True
-        )
-        return
-
-        await message.reply_text(
+        # No return here, send welcome message below if subscribed
+    else: # User is subscribed
             f"👋 أهلًا بك {user.mention}!\nأرسل لي رابط منشور (صورة أو فيديو أو Reels) من انستقرام لتحميله.",
             quote=True
         )
@@ -386,12 +384,8 @@ async def check_subscription_callback(client: Client, callback_query: CallbackQu
     if await is_user_subscribed(client, user.id):
         await callback_query.answer("شكراً لاشتراكك! يمكنك الآن استخدام البوت.", show_alert=True)
         await callback_query.message.edit_text(
-            f"✅ تم التحقق من اشتراكك {user.mention}!
-
-" 
-            f"أرسل لي رابط منشور (صورة أو فيديو أو Reels) من انستقرام لتحميله."
-        )
-        # Add user to DB after successful check if not already added
+            f"✅ تم التحقق من اشتراكك {user.mention}!\n\nأرسل لي رابط منشور (صورة أو فيديو أو Reels) من انستقرام لتحميله."
+        )       # Add user to DB after successful check if not already added
         db_session = next(get_db(), None)
         add_or_update_user(db_session, user)
     else:
