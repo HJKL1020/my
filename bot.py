@@ -254,13 +254,9 @@ async def start_command(client: Client, message: Message):
         keyboard = InlineKeyboardMarkup([
             [InlineKeyboardButton("اشترك في القناة", url=f"https://t.me/{REQUIRED_CHANNEL_USERNAME}")],
             [InlineKeyboardButton("تحققت", callback_data="check_subscription")]
-        ])
+        text_content = f"""👋 أهلًا بك {user.mention}!\n\nلاستخدام البوت، يرجى الاشتراك في قناتنا أولاً: @{REQUIRED_CHANNEL_USERNAME}\n\nاضغط على الزر أدناه للاشتراك ثم اضغط على \'تحققت\'."""
         await message.reply_text(
-            f"""👋 أهلًا بك {user.mention}!
-
-لاستخدام البوت، يرجى الاشتراك في قناتنا أولاً: @{REQUIRED_CHANNEL_USERNAME}
-
-اضغط على الزر أدناه للاشتراك ثم اضغط على 'تحققت'.""",
+            text_content,
             reply_markup=keyboard,
             quote=True
         )
