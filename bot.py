@@ -265,10 +265,10 @@ async def start_command(client: Client, message: Message):
             quote=True
         # No return here, send welcome message below if subscribed
     else: # User is subscribed
+        await message.reply_text(
             f"👋 أهلًا بك {user.mention}!\nأرسل لي رابط منشور (صورة أو فيديو أو Reels) من انستقرام لتحميله.",
             quote=True
         )
-
 @app.on_message(filters.command("stats") & filters.private)
 async def stats_command(client: Client, message: Message):
     user_id = message.from_user.id
