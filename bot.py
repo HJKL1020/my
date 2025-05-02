@@ -266,8 +266,7 @@ async def start_command(client: Client, message: Message):
         )
         return
 
-    await message.reply_text(
-        f"👋 أهلًا بك {user.mention}!
+        await message.reply_text(f"👋 أهلًا بك {user.mention}!")
 
 " 
         f"أرسل لي رابط منشور (صورة أو فيديو أو Reels) من انستقرام لتحميله.",
