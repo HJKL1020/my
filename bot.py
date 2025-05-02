@@ -285,11 +285,7 @@ async def stats_command(client: Client, message: Message):
         total_users = get_total_users(db_session)
         total_downloads = get_total_downloads(db_session)
         await message.reply_text(
-            f"📊 **إحصائيات البوت:**
-
-" 
-            f"👤 إجمالي المستخدمين: {total_users}\n"
-            f"📥 إجمالي التحميلات الناجحة: {total_downloads}",
+            f"📊 **إحصائيات البوت:**\n\n👤 إجمالي المستخدمين: {total_users}\n📥 إجمالي التحميلات الناجحة: {total_downloads}",
             quote=True
         )
     else:
@@ -298,11 +294,7 @@ async def stats_command(client: Client, message: Message):
         if count is not None:
             last_dl_str = last_dl.strftime("%Y-%m-%d %H:%M:%S UTC") if last_dl else "لم تقم بالتحميل بعد"
             await message.reply_text(
-                f"📊 **إحصائياتك:**
-
-" 
-                f"📥 عدد التحميلات: {count}\n"
-                f"🕒 آخر تحميل: {last_dl_str}",
+                f"📊 **إحصائياتك:**\n\n📥 عدد التحميلات: {count}\n🕒 آخر تحميل: {last_dl_str}",
                 quote=True
             )
         else:
