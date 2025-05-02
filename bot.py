@@ -263,6 +263,7 @@ async def start_command(client: Client, message: Message):
 اضغط على الزر أدناه للاشتراك ثم اضغط على 'تحققت'.""",
             reply_markup=keyboard,
             quote=True
+        )
         # No return here, send welcome message below if subscribed
     else: # User is subscribed
         await message.reply_text(
