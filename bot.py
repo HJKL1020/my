@@ -254,19 +254,13 @@ async def start_command(client: Client, message: Message):
         keyboard = InlineKeyboardMarkup([Fix syntax errors in bot.py
             [InlineKeyboardButton("اشترك في القناة", url=f"https://t.me/{REQUIRED_CHANNEL_USERNAME}") ],
             [InlineKeyboardButton("تحققت", callback_data="check_subscription")]
-        ])
-        await message.reply_text(
-            f"👋 أهلًا بك {user.mention}!
-
-" 
-            f"لاستخدام البوت، يرجى الاشتراك في قناتنا أولاً: @{REQUIRED_CHANNEL_USERNAME}
-
-" 
-            f"اضغط على الزر أدناه للاشتراك ثم اضغط على 'تحققت'.",
+               await message.reply_text(
+            f"👋 أهلًا بك {user.mention}!" + "\n\n" + 
+            f"لاستخدام البوت، يرجى الاشتراك في قناتنا أولاً: @{REQUIRED_CHANNEL_USERNAME}" + "\n\n" + 
+            f"اضغط على الزر أدناه للاشتراك ثم اضغط على \'تحققت\'.",
             reply_markup=keyboard,
             quote=True
-        )
-        return
+        )       return
 
     await message.reply_text(
         f"👋 أهلًا بك {user.mention}!
